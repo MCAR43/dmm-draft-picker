@@ -24,22 +24,11 @@
     
     <div class="flex items-center space-x-4">
       {#if $user}
-        <a 
-          href="/create" 
-          class="text-black hover:text-osrs-gold transition-colors"
-        >
-          New Draft
-        </a>
-        <a 
-          href="/profile" 
-          class="text-black hover:text-osrs-gold transition-colors"
-        >
-          My Drafts
-        </a>
+        <span class="text-black">Logged in as: {$user.email}</span>
         <button 
           on:click={handleSignOut}
           disabled={isLoggingOut}
-          class="bg-osrs-red hover:bg-osrs-redHighlight text-white font-medium py-1 px-3 rounded border-2 border-osrs-interfaceBorder transition-colors disabled:opacity-50"
+          class="bg-osrs-red hover:bg-osrs-redHighlight text-black font-medium py-1 px-3 rounded border-2 border-osrs-interfaceBorder transition-colors disabled:opacity-50"
         >
           {isLoggingOut ? 'Signing out...' : 'Sign Out'}
         </button>

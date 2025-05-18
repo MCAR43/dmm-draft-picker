@@ -46,13 +46,13 @@
   <h2 class="text-2xl font-bold mb-6 text-center">Sign Up</h2>
   
   {#if errorMessage}
-    <div class="bg-osrs-red text-white p-3 rounded mb-4">
+    <div class="bg-osrs-red text-black p-3 rounded mb-4">
       {errorMessage}
     </div>
   {/if}
 
   {#if successMessage}
-    <div class="bg-green-600 text-white p-3 rounded mb-4">
+    <div class="bg-green-600 text-black p-3 rounded mb-4">
       {successMessage}
     </div>
   {/if}

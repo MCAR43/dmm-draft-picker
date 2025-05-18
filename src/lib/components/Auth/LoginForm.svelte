@@ -1,5 +1,6 @@
 <script lang="ts">
   import { signIn } from '$lib/stores/authStore';
+  import { goto } from '$app/navigation';
 
   let email = $state('');
   let password = $state('');
@@ -19,6 +20,9 @@
       const { error } = await signIn(email, password);
       if (error) {
         errorMessage = error.message;
+      } else {
+        // Redirect to home page after successful login
+        goto('/');
       }
     } catch (err) {
       errorMessage = 'An error occurred during login';
@@ -33,7 +37,7 @@
   <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
   
   {#if errorMessage}
-    <div class="bg-osrs-red text-white p-3 rounded mb-4">
+    <div class="bg-osrs-red text-black p-3 rounded mb-4">
       {errorMessage}
     </div>
   {/if}

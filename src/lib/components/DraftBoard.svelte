@@ -187,7 +187,7 @@
           } else {
             saveSuccess = 'Draft board saved successfully!';
             setTimeout(() => {
-              goto('/profile');
+              goto('/');
             }, 1500);
           }
         }
@@ -280,13 +280,13 @@
   
   <div class="mt-6 flex flex-col gap-4">
     {#if saveError}
-      <div class="bg-osrs-red text-white p-3 rounded">
+      <div class="bg-osrs-red text-black p-3 rounded">
         {saveError}
       </div>
     {/if}
     
     {#if saveSuccess}
-      <div class="bg-green-600 text-white p-3 rounded">
+      <div class="bg-green-600 text-black p-3 rounded">
         {saveSuccess}
       </div>
     {/if}
@@ -300,14 +300,33 @@
         >
           {isSaving ? 'Saving...' : boardId ? 'Update Draft Board' : 'Save Draft Board'}
         </button>
+      {:else}
+        <button 
+          class="bg-osrs-gold hover:bg-osrs-goldHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
+          on:click={() => alert('Please log in to save your draft board to the database')}
+        >
+          Save to Database (Login Required)
+        </button>
       {/if}
       
       <button
-        class="bg-osrs-red hover:bg-osrs-redHighlight text-white font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
+        class="bg-osrs-red hover:bg-osrs-redHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
         on:click={resetDraftBoard}
       >
         Reset
       </button>
+      
+      {#if isAllDraftSlotsFilled()}
+        <button 
+          class="bg-osrs-blue hover:bg-osrs-blueHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
+          on:click={() => {
+            const serializedData = serializeDraftBoard();
+            alert(`Board serialized! Copy this string to save your draft:\n${serializedData}`);
+          }}
+        >
+          Export Board
+        </button>
+      {/if}
     </div>
     
     <div class="mt-2 flex flex-col sm:flex-row gap-2 justify-center items-center">
@@ -318,7 +337,7 @@
         class="p-2 rounded border-2 border-osrs-interfaceBorder bg-osrs-interfaceLight text-black w-full sm:w-auto sm:flex-grow max-w-lg"
       />
       <button
-        class="bg-osrs-blue hover:bg-osrs-blueHighlight text-white font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors w-full sm:w-auto"
+        class="bg-osrs-blue hover:bg-osrs-blueHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors w-full sm:w-auto"
         on:click={handleLoadState}
       >
         Load Draft Board

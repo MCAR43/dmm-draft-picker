@@ -62,7 +62,7 @@
   <h2 class="text-2xl font-bold mb-4">Your Draft Boards</h2>
   
   {#if error}
-    <div class="bg-osrs-red text-white p-3 rounded mb-4">
+    <div class="bg-osrs-red text-black p-3 rounded mb-4">
       {error}
     </div>
   {/if}
@@ -89,7 +89,7 @@
           <div class="flex gap-2 mt-2">
             <a 
               href={`/draft/${board.id}`}
-              class="bg-osrs-blue hover:bg-osrs-blueHighlight text-white py-1 px-3 rounded border border-osrs-interfaceBorder transition-colors text-sm"
+              class="bg-osrs-blue hover:bg-osrs-blueHighlight text-black py-1 px-3 rounded border border-osrs-interfaceBorder transition-colors text-sm"
             >
               View
             </a>
@@ -101,7 +101,7 @@
             </a>
             <button 
               on:click={() => handleDelete(board.id || '')}
-              class="bg-osrs-red hover:bg-osrs-redHighlight text-white py-1 px-3 rounded border border-osrs-interfaceBorder transition-colors text-sm"
+              class="bg-osrs-red hover:bg-osrs-redHighlight text-black py-1 px-3 rounded border border-osrs-interfaceBorder transition-colors text-sm"
             >
               Delete
             </button>

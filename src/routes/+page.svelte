@@ -53,10 +53,16 @@
     },
   ];
   const totalPicks = 24;
+  const title = "Deadman Allstars Draft";
 </script>
 
 <main>
-  <div class="relative">
-    <DraftBoard {captains} {totalPicks} />
+  <div class="mb-6 text-center">
+    <h1 class="text-3xl font-bold text-black">Draft Picker</h1>
+    <p class="text-black mt-2">Create, save, and share your draft board. Login to save drafts to your account.</p>
+  </div>
+  
+  <div>
+    <DraftBoard {captains} {totalPicks} {title} />
   </div>
 </main>

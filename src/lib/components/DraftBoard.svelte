@@ -10,7 +10,7 @@
     const { 
       captains = [], 
       totalPicks = 24,
-      title = 'OSRS Draft Board'
+      title = 'Deadman Allstars Draft'
     } = $props();
   
     const numTeams = captains.length;

@@ -1,28 +1,37 @@
-# sv
+# Draft Picker
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A draft board application for managing player drafts, built with Svelte, TailwindCSS, and Supabase.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- User authentication with Supabase Auth
+- Create, edit, and delete draft boards
+- Share draft boards with others
+- User profiles with draft history
 
-```bash
-# create a new project in the current directory
-npx sv create
+## Setup
 
-# create a new project in my-app
-npx sv create my-app
-```
+1. Clone the repository
+2. Install dependencies with `bun install` or `npm install`
+3. Set up Supabase:
+   - Create a new Supabase project at [supabase.com](https://supabase.com)
+   - Run the SQL in `supabase-setup.sql` in the Supabase SQL editor
+   - Enable Email/Password authentication in Supabase Auth settings
+   - Get your Supabase URL and anon key from the API settings
+4. Create a `.env` file with the following variables:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+5. Start the development server with `bun run dev` or `npm run dev`
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Once you've set up the project and installed dependencies, start a development server:
 
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+# start the server and open the app in a new browser tab
+bun run dev -- --open
 ```
 
 ## Building
@@ -30,9 +39,21 @@ npm run dev -- --open
 To create a production version of your app:
 
 ```bash
-npm run build
+bun run build
 ```
 
-You can preview the production build with `npm run preview`.
+You can preview the production build with `bun run preview`.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Supabase Database Structure
+
+The application uses a single `draft_boards` table with the following structure:
+
+- `id`: UUID (primary key)
+- `title`: TEXT (name of the draft)
+- `captains`: JSON (array of captain names)
+- `selections`: JSON (array of selected players)
+- `user_id`: UUID (foreign key to auth.users)
+- `created_at`: TIMESTAMP
+- `updated_at`: TIMESTAMP
+
+Row-level security policies ensure users can only access their own draft boards.

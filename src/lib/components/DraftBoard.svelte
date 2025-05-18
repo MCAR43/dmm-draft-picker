@@ -1,6 +1,10 @@
 <script lang="ts">
     import DraftBoardItem from './DraftBoardItem.svelte';
     import DraftBoardHeader from './DraftBoardHeader.svelte';
+    import { user } from '$lib/stores/authStore';
+    import { saveDraftBoard, updateDraftBoard, getDraftBoard } from '$lib/services/draftService';
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
   
     type Player = {
       name: string;
@@ -11,7 +15,8 @@
       captains = [], 
       totalPicks = 24,
       title = 'Deadman Allstars Draft',
-      initialState = ''
+      initialState = '',
+      boardId = ''
     } = $props();
   
     const numTeams = captains.length;
@@ -47,6 +52,9 @@
     
     const allOriginalPlayers = [...availablePlayers];
     let serializedInput = $state('');
+    let saveError = $state('');
+    let saveSuccess = $state('');
+    let isSaving = $state(false);
   
     // Create a matrix to represent the snake draft order
     const draftMatrix: number[][] = [];
@@ -138,14 +146,95 @@
       selections.fill(null);
       availablePlayers.length = 0;
       availablePlayers.push(...allOriginalPlayers);
+      saveError = '';
+      saveSuccess = '';
     }
     
-    // Handle submit action
-    function handleSubmit() {
-      const serializedData = serializeDraftBoard();
-      console.log('Serialized Draft Board:', serializedData);
-      alert(`Board serialized! Copy this string to save your draft:\n${serializedData}`);
-      resetDraftBoard();
+    // Handle saving to Supabase
+    async function handleSave() {
+      if (!$user) {
+        saveError = 'You must be logged in to save a draft board';
+        return;
+      }
+      
+      isSaving = true;
+      saveError = '';
+      saveSuccess = '';
+      
+      try {
+        const picksData = selections.map(player => player?.name || null);
+        
+        const draftBoardData = {
+          title: title,
+          captains: captains,
+          selections: picksData,
+          user_id: $user.id
+        };
+        
+        if (boardId) {
+          // Update existing board
+          const { error } = await updateDraftBoard(boardId, draftBoardData);
+          if (error) {
+            saveError = error.message;
+          } else {
+            saveSuccess = 'Draft board updated successfully!';
+          }
+        } else {
+          // Create new board
+          const { data, error } = await saveDraftBoard(draftBoardData);
+          if (error) {
+            saveError = error.message;
+          } else {
+            saveSuccess = 'Draft board saved successfully!';
+            setTimeout(() => {
+              goto('/profile');
+            }, 1500);
+          }
+        }
+      } catch (err) {
+        console.error('Error saving draft board:', err);
+        saveError = 'An error occurred while saving the draft board';
+      } finally {
+        isSaving = false;
+      }
+    }
+    
+    // Load a draft board from Supabase by ID
+    async function loadDraftBoard(id: string) {
+      try {
+        const { data, error } = await getDraftBoard(id);
+        
+        if (error) {
+          saveError = error.message;
+          return;
+        }
+        
+        if (data) {
+          // Update UI with board data
+          selections.fill(null);
+          availablePlayers.length = 0;
+          availablePlayers.push(...allOriginalPlayers);
+          
+          if (Array.isArray(data.selections)) {
+            for (let i = 0; i < data.selections.length && i < selections.length; i++) {
+              const playerName = data.selections[i];
+              if (playerName) {
+                const player = availablePlayers.find(p => p.name === playerName);
+                if (player) {
+                  selections[i] = player;
+                  const playerIndex = availablePlayers.findIndex(p => p.name === playerName);
+                  if (playerIndex > -1) {
+                    availablePlayers.splice(playerIndex, 1);
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error loading draft board:', err);
+        saveError = 'An error occurred while loading the draft board';
+      }
     }
     
     // Handle loading serialized state
@@ -158,15 +247,17 @@
       deserializeDraftBoard(serializedInput.trim());
     }
     
-    // Initialize from initialState if provided
-    $effect(() => {
+    // Initialize from initialState or boardId if provided
+    onMount(async () => {
       if (initialState) {
         deserializeDraftBoard(initialState);
+      } else if (boardId) {
+        await loadDraftBoard(boardId);
       }
     });
 </script>
   
-<div class="bg-osrs-interface border-4 border-osrs-interfaceBorder rounded-lg p-6">
+<div class="bg-osrs-interface border-4 border-osrs-interfaceBorder rounded-lg p-6 text-black">
   <DraftBoardHeader {title} {captains} />
 
   <div class="grid grid-cols-{numTeams} gap-4">
@@ -188,16 +279,36 @@
   </div>
   
   <div class="mt-6 flex flex-col gap-4">
-    {#if isAllDraftSlotsFilled()}
-      <div class="text-center">
-        <button 
-          class="bg-osrs-gold hover:bg-osrs-goldHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
-          on:click={handleSubmit}
-        >
-          Submit Draft Board
-        </button>
+    {#if saveError}
+      <div class="bg-osrs-red text-white p-3 rounded">
+        {saveError}
       </div>
     {/if}
+    
+    {#if saveSuccess}
+      <div class="bg-green-600 text-white p-3 rounded">
+        {saveSuccess}
+      </div>
+    {/if}
+    
+    <div class="text-center flex flex-wrap justify-center gap-3">
+      {#if $user}
+        <button 
+          class="bg-osrs-gold hover:bg-osrs-goldHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors disabled:opacity-50"
+          on:click={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? 'Saving...' : boardId ? 'Update Draft Board' : 'Save Draft Board'}
+        </button>
+      {/if}
+      
+      <button
+        class="bg-osrs-red hover:bg-osrs-redHighlight text-white font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
+        on:click={resetDraftBoard}
+      >
+        Reset
+      </button>
+    </div>
     
     <div class="mt-2 flex flex-col sm:flex-row gap-2 justify-center items-center">
       <input
@@ -211,12 +322,6 @@
         on:click={handleLoadState}
       >
         Load Draft Board
-      </button>
-      <button
-        class="bg-osrs-red hover:bg-osrs-redHighlight text-white font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors w-full sm:w-auto"
-        on:click={resetDraftBoard}
-      >
-        Reset
       </button>
     </div>
   </div>

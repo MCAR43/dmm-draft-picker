@@ -4,7 +4,7 @@ CREATE TABLE draft_boards (
   title TEXT NOT NULL,
   captains JSON NOT NULL,
   selections JSON NOT NULL,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
@@ -12,18 +12,24 @@ CREATE TABLE draft_boards (
 -- Enable Row Level Security
 ALTER TABLE draft_boards ENABLE ROW LEVEL SECURITY;
 
--- Create a policy that allows users to select their own draft boards
-CREATE POLICY "Users can view their own draft boards" 
+-- Create a policy that allows users to view their own boards and public boards (null user_id)
+CREATE POLICY "Users can view their own and public boards" 
   ON draft_boards FOR SELECT 
-  USING (auth.uid() = user_id);
+  USING (
+    user_id IS NULL OR  -- Allow viewing boards with null user_id
+    auth.uid() = user_id -- Or users can view their own boards
+  );
 
--- Create a policy that allows users to insert their own draft boards
-CREATE POLICY "Users can insert their own draft boards" 
+-- Create a policy that allows both authenticated users and anonymous submissions
+CREATE POLICY "Allow all users to insert draft boards" 
   ON draft_boards FOR INSERT 
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (
+    user_id IS NULL OR  -- Allow anonymous submissions with null user_id
+    auth.uid() = user_id -- Or authenticated users can set their own user_id
+  );
 
 -- Create a policy that allows users to update their own draft boards
-CREATE POLICY "Users can update their own draft boards" 
+CREATE POLICY "Users can update their own draft boards"
   ON draft_boards FOR UPDATE 
   USING (auth.uid() = user_id);
 

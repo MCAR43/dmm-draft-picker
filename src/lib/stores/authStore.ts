@@ -1,38 +1,39 @@
-import { writable } from 'svelte/store';
 import { supabase } from '$lib/supabase';
-import type { User, Session } from '@supabase/supabase-js';
+import { writable } from 'svelte/store';
+import type { Session, User } from '@supabase/supabase-js';
 
-// Create a store for the user
+// Create a store with an initial state of null (not logged in)
 export const user = writable<User | null>(null);
 export const session = writable<Session | null>(null);
 
-// Initialize user on load
-export const initAuth = async () => {
-  // Get session data if it exists
+// Initialize the auth store with the current session
+export const initializeAuth = async () => {
+  // Get the current session
   const { data } = await supabase.auth.getSession();
-  session.set(data.session);
-  user.set(data.session?.user || null);
+  
+  if (data.session) {
+    session.set(data.session);
+    user.set(data.session.user);
+  }
 
   // Listen for auth changes
   supabase.auth.onAuthStateChange((event, newSession) => {
     session.set(newSession);
-    user.set(newSession?.user || null);
+    user.set(newSession?.user ?? null);
   });
 };
 
-// Sign in with email and password
+// Helper functions for auth
+export const signUp = async (email: string, password: string, username: string) => {
+  const { error } = await supabase.auth.signUp({ email, password, options: { data: { username } } });
+  return { error };
+};
+
 export const signIn = async (email: string, password: string) => {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   return { error };
 };
 
-// Sign up with email and password
-export const signUp = async (email: string, password: string) => {
-  const { error } = await supabase.auth.signUp({ email, password });
-  return { error };
-};
-
-// Sign out
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut();
   return { error };

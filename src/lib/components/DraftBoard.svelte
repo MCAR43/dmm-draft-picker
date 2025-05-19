@@ -1,9 +1,12 @@
 <script lang="ts">
     import DraftBoardItem from './DraftBoardItem.svelte';
     import DraftBoardHeader from './DraftBoardHeader.svelte';
+    import InfoModal from './InfoModal.svelte';
     import { saveDraftBoard, updateDraftBoard, getDraftBoard } from '$lib/services/draftService';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
+    import { user } from '$lib/stores/authStore';
+    import { get } from 'svelte/store';
   
     type Player = {
       name: string;
@@ -54,6 +57,10 @@
     let saveError = $state('');
     let saveSuccess = $state('');
     let isSaving = $state(false);
+    let exportedData = $state('');
+    let showExportedData = $state(false);
+    let copySuccess = $state(false);
+    let isInfoModalOpen = $state(false);
   
     // Create a matrix to represent the snake draft order
     const draftMatrix: number[][] = [];
@@ -147,6 +154,8 @@
       availablePlayers.push(...allOriginalPlayers);
       saveError = '';
       saveSuccess = '';
+      showExportedData = false;
+      exportedData = '';
     }
     
     // Handle saving to Supabase
@@ -158,10 +167,13 @@
       try {
         const picksData = selections.map(player => player?.name || null);
         
+        const currentUser = get(user);
+        
         const draftBoardData = {
           title: title,
           captains: captains,
           selections: picksData,
+          user_id: currentUser?.id
         };
         
         if (boardId) {
@@ -170,7 +182,7 @@
           if (error) {
             saveError = error.message;
           } else {
-            saveSuccess = 'Draft board updated successfully!';
+            saveSuccess = 'Board updated successfully!';
           }
         } else {
           // Create new board
@@ -178,7 +190,7 @@
           if (error) {
             saveError = error.message;
           } else {
-            saveSuccess = 'Draft board saved successfully!';
+            saveSuccess = 'Board saved successfully!';
             setTimeout(() => {
               goto('/');
             }, 1500);
@@ -189,6 +201,26 @@
         saveError = 'An error occurred while saving the draft board';
       } finally {
         isSaving = false;
+      }
+    }
+    
+    // Handle exporting the board
+    function handleExport() {
+      exportedData = serializeDraftBoard();
+      showExportedData = true;
+      copySuccess = false;
+    }
+    
+    // Copy serialized data to clipboard
+    async function copyToClipboard() {
+      try {
+        await navigator.clipboard.writeText(exportedData);
+        copySuccess = true;
+        setTimeout(() => {
+          copySuccess = false;
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
       }
     }
     
@@ -240,6 +272,10 @@
       deserializeDraftBoard(serializedInput.trim());
     }
     
+    function toggleInfoModal() {
+      isInfoModalOpen = !isInfoModalOpen;
+    }
+    
     // Initialize from initialState or boardId if provided
     onMount(async () => {
       if (initialState) {
@@ -250,8 +286,8 @@
     });
 </script>
   
-<div class="bg-osrs-interface border-4 border-osrs-interfaceBorder rounded-lg p-6 text-black">
-  <DraftBoardHeader {title} {captains} />
+<div class="bg-white border-4 border-gray-200 rounded-lg p-6 text-gray-900">
+  <DraftBoardHeader {title} {captains} onToggleInfo={toggleInfoModal} />
 
   <div class="grid grid-cols-{numTeams} gap-4">
     {#each captains as captain, colIndex}
@@ -273,28 +309,37 @@
   
   <div class="mt-6 flex flex-col gap-4">
     {#if saveError}
-      <div class="bg-osrs-red text-black p-3 rounded">
+      <div class="bg-red-900 text-white p-3 rounded">
         {saveError}
       </div>
     {/if}
     
     {#if saveSuccess}
-      <div class="bg-green-600 text-black p-3 rounded">
+      <div class="bg-gray-800 text-white p-3 rounded">
         {saveSuccess}
       </div>
     {/if}
     
+    <div class="text-center mb-2">
+      {#if !isAllDraftSlotsFilled()}
+        <p class="text-red-900 font-medium">You must fill all draft positions before saving</p>
+      {:else}
+        <p class="text-gray-800 font-medium">Your board is complete and ready to save!</p>
+      {/if}
+    </div>
+    
     <div class="text-center flex flex-wrap justify-center gap-3">
       <button 
-        class="bg-osrs-gold hover:bg-osrs-goldHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors disabled:opacity-50"
+        class="bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold py-2 px-4 rounded border-2 border-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         on:click={handleSave}
-        disabled={isSaving}
+        disabled={isSaving || !isAllDraftSlotsFilled()}
+        title={!isAllDraftSlotsFilled() ? 'Fill out the entire board to save' : ''}
       >
-        {isSaving ? 'Saving...' : boardId ? 'Update Draft Board' : 'Save Draft Board'}
+        {isSaving ? 'Saving...' : boardId ? 'Update Board' : 'Save Board'}
       </button>
       
       <button
-        class="bg-osrs-red hover:bg-osrs-redHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
+        class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded border-2 border-gray-200 transition-colors"
         on:click={resetDraftBoard}
       >
         Reset
@@ -302,30 +347,61 @@
       
       {#if isAllDraftSlotsFilled()}
         <button 
-          class="bg-osrs-blue hover:bg-osrs-blueHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
-          on:click={() => {
-            const serializedData = serializeDraftBoard();
-            alert(`Board serialized! Copy this string to save your draft:\n${serializedData}`);
-          }}
+          class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded border-2 border-gray-200 transition-colors"
+          on:click={handleExport}
         >
           Export Board
         </button>
       {/if}
     </div>
     
+    {#if showExportedData}
+      <div class="mt-4 p-4 bg-gray-50 border-2 border-gray-200 rounded-lg">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="font-bold text-gray-900">Exported Board Data</h3>
+          <button 
+            class="text-gray-400 hover:text-gray-500"
+            on:click={() => showExportedData = false}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="relative">
+          <textarea 
+            class="w-full h-20 p-2 bg-white border border-gray-200 rounded text-sm font-mono" 
+            readonly
+            value={exportedData}
+          ></textarea>
+          <button 
+            class="absolute right-2 bottom-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-bold py-1 px-2 rounded border border-gray-200 transition-colors"
+            on:click={copyToClipboard}
+          >
+            {copySuccess ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+        <p class="text-sm mt-2 text-gray-600">Use this code to share your board or load it later.</p>
+      </div>
+    {/if}
+    
     <div class="mt-2 flex flex-col sm:flex-row gap-2 justify-center items-center">
       <input
         type="text"
         bind:value={serializedInput}
         placeholder="Paste serialized draft board here"
-        class="p-2 rounded border-2 border-osrs-interfaceBorder bg-osrs-interfaceLight text-black w-full sm:w-auto sm:flex-grow max-w-lg"
+        class="p-2 rounded border-2 border-gray-200 bg-gray-50 text-gray-900 w-full sm:w-auto sm:flex-grow max-w-lg"
       />
       <button
-        class="bg-osrs-blue hover:bg-osrs-blueHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors w-full sm:w-auto"
+        class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded border-2 border-gray-200 transition-colors w-full sm:w-auto"
         on:click={handleLoadState}
       >
         Load Draft Board
       </button>
     </div>
   </div>
+
+  {#if isInfoModalOpen}
+    <InfoModal onClose={toggleInfoModal} />
+  {/if}
 </div>

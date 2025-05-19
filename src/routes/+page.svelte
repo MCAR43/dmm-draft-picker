@@ -1,6 +1,10 @@
 <script>
   import DraftBoard from '$lib/components/DraftBoard.svelte';
   import FAQModal from '$lib/components/FAQModal.svelte';
+  import AuthModal from '$lib/components/Auth/AuthModal.svelte';
+  import UserProfile from '$lib/components/Auth/UserProfile.svelte';
+  import { initializeAuth, user } from '$lib/stores/authStore';
+  import { onMount } from 'svelte';
   
   // Format captains as objects with required properties
   const captains = [
@@ -57,32 +61,52 @@
   const title = "Deadman Allstars Draft";
 
   let isFAQModalOpen = $state(false);
+  let isAuthModalOpen = $state(false);
 
   function toggleFAQModal() {
     isFAQModalOpen = !isFAQModalOpen;
   }
+  
+  function toggleAuthModal() {
+    isAuthModalOpen = !isAuthModalOpen;
+  }
+  
+  onMount(() => {
+    // Initialize the auth state when the app loads
+    initializeAuth();
+  });
 </script>
 
 <main>
-  <div class="absolute top-4 left-4">
+  <div class="absolute top-4 left-4 flex items-center space-x-2">
     <button 
-      class="bg-osrs-buttonBg text-osrs-yellow border-2 border-osrs-interfaceBorder px-4 py-2 rounded-full font-bold hover:bg-osrs-buttonHover transition-colors"
+      class="bg-indigo-100 text-indigo-600 border-2 border-indigo-700 rounded-full w-8 h-8 flex items-center justify-center font-bold hover:bg-indigo-200 transition-colors shadow-sm hover:shadow-md"
       on:click={toggleFAQModal}
     >
       ?
     </button>
+    
+    {#if $user}
+      <UserProfile />
+    {:else}
+      <button 
+        class="bg-indigo-100 text-indigo-600 border-2 border-indigo-700 px-4 py-2 rounded font-bold hover:bg-indigo-200 transition-colors shadow-sm hover:shadow-md"
+        on:click={toggleAuthModal}
+      >
+        Login
+      </button>
+    {/if}
   </div>
 
-  <div class="mb-6 text-center">
-    <p class="text-black mt-2">This is a for fun project to see what the community thinks about where the draft is going to be.</p>
-    <p class="text-black mt-2">There is no authentication for this project, you can submit as many drafts as you want but please keep them legitimate so the stats afterwards are accurate.</p>
-  </div>
-  
   <div>
     <DraftBoard {captains} {totalPicks} {title} />
   </div>
 
   {#if isFAQModalOpen}
     <FAQModal onClose={toggleFAQModal} />
+  {/if}
+  
+  {#if isAuthModalOpen}
+    <AuthModal onClose={toggleAuthModal} />
   {/if}
 </main>

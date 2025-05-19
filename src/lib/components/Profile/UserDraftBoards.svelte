@@ -58,11 +58,11 @@
   }
 </script>
 
-<div class="bg-osrs-interface border-4 border-osrs-interfaceBorder rounded-lg p-6 text-black">
+<div class="bg-white border-4 border-gray-800 rounded-lg p-6 text-gray-900">
   <h2 class="text-2xl font-bold mb-4">Your Draft Boards</h2>
   
   {#if error}
-    <div class="bg-osrs-red text-black p-3 rounded mb-4">
+    <div class="bg-red-900 text-white p-3 rounded mb-4">
       {error}
     </div>
   {/if}
@@ -74,7 +74,7 @@
       <p class="mb-4">You haven't created any draft boards yet.</p>
       <a 
         href="/create" 
-        class="bg-osrs-gold hover:bg-osrs-goldHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
+        class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded border-2 border-gray-800 transition-colors"
       >
         Create New Draft
       </a>
@@ -82,26 +82,26 @@
   {:else}
     <div class="grid gap-4 md:grid-cols-2">
       {#each draftBoards as board}
-        <div class="bg-osrs-interfaceLight border-2 border-osrs-interfaceBorder rounded p-4">
+        <div class="bg-gray-50 border-2 border-gray-800 rounded p-4">
           <h3 class="text-xl font-bold mb-2">{board.title}</h3>
           <p class="text-sm opacity-75 mb-3">Created: {formatDate(board.created_at || '')}</p>
           
           <div class="flex gap-2 mt-2">
             <a 
               href={`/draft/${board.id}`}
-              class="bg-osrs-blue hover:bg-osrs-blueHighlight text-black py-1 px-3 rounded border border-osrs-interfaceBorder transition-colors text-sm"
+              class="bg-gray-600 hover:bg-gray-700 text-white py-1 px-3 rounded border border-gray-800 transition-colors text-sm"
             >
               View
             </a>
             <a 
               href={`/draft/${board.id}/edit`}
-              class="bg-osrs-gold hover:bg-osrs-goldHighlight text-black py-1 px-3 rounded border border-osrs-interfaceBorder transition-colors text-sm"
+              class="bg-gray-100 hover:bg-gray-200 text-gray-800 py-1 px-3 rounded border border-gray-800 transition-colors text-sm"
             >
               Edit
             </a>
             <button 
               on:click={() => handleDelete(board.id || '')}
-              class="bg-osrs-red hover:bg-osrs-redHighlight text-black py-1 px-3 rounded border border-osrs-interfaceBorder transition-colors text-sm"
+              class="bg-red-900 hover:bg-red-800 text-white py-1 px-3 rounded border border-gray-800 transition-colors text-sm"
             >
               Delete
             </button>
@@ -113,7 +113,7 @@
     <div class="mt-6 text-center">
       <a 
         href="/create" 
-        class="bg-osrs-gold hover:bg-osrs-goldHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
+        class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded border-2 border-gray-800 transition-colors"
       >
         Create New Draft
       </a>

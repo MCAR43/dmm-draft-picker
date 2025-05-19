@@ -3,8 +3,10 @@
   import FAQModal from '$lib/components/FAQModal.svelte';
   import AuthModal from '$lib/components/Auth/AuthModal.svelte';
   import UserProfile from '$lib/components/Auth/UserProfile.svelte';
+  import DonationTable from '$lib/components/DonationTable.svelte';
   import { initializeAuth, user } from '$lib/stores/authStore';
   import { onMount } from 'svelte';
+  import donationsData from '$lib/data/donations.json';
   
   // Format captains as objects with required properties
   const captains = [
@@ -98,8 +100,14 @@
     {/if}
   </div>
 
-  <div>
-    <DraftBoard {captains} {totalPicks} {title} />
+  <div class="flex flex-col lg:flex-row gap-6 w-full max-w-full">
+    <div class="w-full flex-shrink-0">
+      <DraftBoard {captains} {totalPicks} {title} />
+    </div>
+    
+    <!-- <div class="w-full lg:w-64 flex-shrink-0">
+      <DonationTable />
+    </div> -->
   </div>
 
   {#if isFAQModalOpen}

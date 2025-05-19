@@ -1,5 +1,6 @@
 <script>
   import DraftBoard from '$lib/components/DraftBoard.svelte';
+  import FAQModal from '$lib/components/FAQModal.svelte';
   
   // Format captains as objects with required properties
   const captains = [
@@ -54,15 +55,34 @@
   ];
   const totalPicks = 24;
   const title = "Deadman Allstars Draft";
+
+  let isFAQModalOpen = $state(false);
+
+  function toggleFAQModal() {
+    isFAQModalOpen = !isFAQModalOpen;
+  }
 </script>
 
 <main>
+  <div class="absolute top-4 left-4">
+    <button 
+      class="bg-osrs-buttonBg text-osrs-yellow border-2 border-osrs-interfaceBorder px-4 py-2 rounded-full font-bold hover:bg-osrs-buttonHover transition-colors"
+      on:click={toggleFAQModal}
+    >
+      ?
+    </button>
+  </div>
+
   <div class="mb-6 text-center">
     <h1 class="text-3xl font-bold text-black">Draft Picker</h1>
-    <p class="text-black mt-2">Create, save, and share your draft board. Login to save drafts to your account.</p>
+    <p class="text-black mt-2">Create, save, and share your draft board.</p>
   </div>
   
   <div>
     <DraftBoard {captains} {totalPicks} {title} />
   </div>
+
+  {#if isFAQModalOpen}
+    <FAQModal onClose={toggleFAQModal} />
+  {/if}
 </main>

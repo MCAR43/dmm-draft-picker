@@ -1,7 +1,6 @@
 <script lang="ts">
     import DraftBoardItem from './DraftBoardItem.svelte';
     import DraftBoardHeader from './DraftBoardHeader.svelte';
-    import { user } from '$lib/stores/authStore';
     import { saveDraftBoard, updateDraftBoard, getDraftBoard } from '$lib/services/draftService';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
@@ -152,11 +151,6 @@
     
     // Handle saving to Supabase
     async function handleSave() {
-      if (!$user) {
-        saveError = 'You must be logged in to save a draft board';
-        return;
-      }
-      
       isSaving = true;
       saveError = '';
       saveSuccess = '';
@@ -168,7 +162,6 @@
           title: title,
           captains: captains,
           selections: picksData,
-          user_id: $user.id
         };
         
         if (boardId) {
@@ -292,22 +285,13 @@
     {/if}
     
     <div class="text-center flex flex-wrap justify-center gap-3">
-      {#if $user}
-        <button 
-          class="bg-osrs-gold hover:bg-osrs-goldHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors disabled:opacity-50"
-          on:click={handleSave}
-          disabled={isSaving}
-        >
-          {isSaving ? 'Saving...' : boardId ? 'Update Draft Board' : 'Save Draft Board'}
-        </button>
-      {:else}
-        <button 
-          class="bg-osrs-gold hover:bg-osrs-goldHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"
-          on:click={() => alert('Please log in to save your draft board to the database')}
-        >
-          Save to Database (Login Required)
-        </button>
-      {/if}
+      <button 
+        class="bg-osrs-gold hover:bg-osrs-goldHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors disabled:opacity-50"
+        on:click={handleSave}
+        disabled={isSaving}
+      >
+        {isSaving ? 'Saving...' : boardId ? 'Update Draft Board' : 'Save Draft Board'}
+      </button>
       
       <button
         class="bg-osrs-red hover:bg-osrs-redHighlight text-black font-bold py-2 px-4 rounded border-2 border-osrs-interfaceBorder transition-colors"

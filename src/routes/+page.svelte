@@ -74,8 +74,8 @@
   </div>
 
   <div class="mb-6 text-center">
-    <h1 class="text-3xl font-bold text-black">Draft Picker</h1>
-    <p class="text-black mt-2">Create, save, and share your draft board.</p>
+    <p class="text-black mt-2">This is a for fun project to see what the community thinks about where the draft is going to be.</p>
+    <p class="text-black mt-2">There is no authentication for this project, you can submit as many drafts as you want but please keep them legitimate so the stats afterwards are accurate.</p>
   </div>
   
   <div>

@@ -53,17 +53,13 @@
 			
 			<p>
 				Want to contribute to the prize pool? Contact me in-game (Gimpsu) with your donation 
-				amount and details. Every contribution helps make this competition more exciting!
+				amount and details.  Every contribution will be posted to the website.
 			</p>
 			
 			<p>
 				Payment proof will be posted to this website and the OSRS Subreddit after the competition 
 				concludes. If no perfect bracket exists, the most accurate prediction (determined by a 
 				fitness algorithm) will receive the prize.
-			</p>
-			
-			<p class="italic">
-				Let's be honest - who isn't picking Port Khazard first?
 			</p>
 		</div>
 		

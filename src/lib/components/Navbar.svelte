@@ -44,10 +44,10 @@
           <span class="text-xl font-bold text-indigo-600">DMM Allstars Draft</span>
         </a>
         <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-          <a href="/" class={getNavLinkClass('/')}>
+          <a href="/" class={getNavLinkClass('/') + " text-xl"}>
             Home
           </a>
-          <a href="/stats" class={getNavLinkClass('/stats')}>
+          <a href="/stats" class={getNavLinkClass('/stats') + " text-xl"}>
             Stats
           </a>
         </div>

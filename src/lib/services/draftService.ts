@@ -87,10 +87,15 @@ export const deleteDraftBoard = async (id: string) => {
   return { error };
 }; 
 
-export const getDraftStats = async () => {
-  const { data, error } = await supabase
-    .from('draft_boards')
-    .select('*')
+export const getDraftStats = async (not_id: string | null) => {
+  const { data, error } = not_id 
+    ? await supabase
+        .from('draft_boards')
+        .select('*')
+        .or(`user_id.neq.${not_id},user_id.is.null`)
+    : await supabase
+        .from('draft_boards')
+        .select('*');
 
   return { data, error };
 };

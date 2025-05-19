@@ -7,6 +7,7 @@
     import { goto } from '$app/navigation';
     import { user } from '$lib/stores/authStore';
     import { get } from 'svelte/store';
+    import playersData from '$lib/data/players.json';
   
     type Player = {
       name: string;
@@ -24,32 +25,7 @@
     const rounds = Math.ceil(totalPicks / numTeams);
   
     const selections = $state(Array(totalPicks).fill(null));
-    const availablePlayers = $state<Player[]>([
-      { name: "alfie", src: "/images/players/alfie.png" },
-      { name: "cEngineer", src: "/images/players/c_engineer.png" },
-      { name: "coxie", src: "/images/players/coxie.png" },
-      { name: "ditterbitter", src: "/images/players/ditterbitter.png" },
-      { name: "dubiedobies", src: "/images/players/dubiedobies.png" },
-      { name: "eliop14", src: "/images/players/eliop14.png" },
-      { name: "evscape", src: "/images/players/evscape.png" },
-      { name: "lake", src: "/images/players/lake.png" },
-      { name: "mika", src: "/images/players/mika.png" },
-      { name: "mmorpg", src: "/images/players/mmorpg.png" },
-      { name: "mrMammal", src: "/images/players/mr_mammal.png" },
-      { name: "muts", src: "/images/players/muts.png" },
-      { name: "pip", src: "/images/players/pip.png" },
-      { name: "portKhazard", src: "/images/players/port_khazard.png" },
-      { name: "purespam", src: "/images/players/purespam.png" },
-      { name: "purpp", src: "/images/players/purpp.png" },
-      { name: "raikesy", src: "/images/players/raikesy.png" },
-      { name: "rhys", src: "/images/players/rhys.png" },
-      { name: "sickNerd", src: "/images/players/sick_nerd.png" },
-      { name: "skiddler", src: "/images/players/skiddler.png" },
-      { name: "sparcMac", src: "/images/players/sparc_mac.png" },
-      { name: "vTheVictim", src: "/images/players/v_the_victim.png" },
-      { name: "verf", src: "/images/players/verf.png" },
-      { name: "westham", src: "/images/players/westham.png" }
-    ]);
+    const availablePlayers = $state<Player[]>([...playersData]);
     
     const allOriginalPlayers = [...availablePlayers];
     let serializedInput = $state('');

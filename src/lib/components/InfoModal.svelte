@@ -48,7 +48,7 @@
 			
 			<p>
 				There's a <span class="font-bold text-gray-800">100M OSRS GP bounty</span> for the first 
-				person to submit a completely correct draft board.  This is a small amount but is all i've got as a poor GIM.
+				person to submit a completely correct draft board.  This is a small amount but is all i've got as a poor GIM 
 			</p>
 			
 			<p>

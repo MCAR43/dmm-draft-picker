@@ -52,7 +52,7 @@
 			</p>
 			
 			<p>
-				Want to contribute to the prize pool? Contact me in-game (Gimpsu) with your donation 
+				Want to contribute to the prize pool? Contact me in-game (Gimpsu) or at hello@gimpsu.dev with your donation 
 				amount and details.  Every contribution will be posted to the website.
 			</p>
 			

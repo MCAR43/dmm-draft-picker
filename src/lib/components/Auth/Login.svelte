@@ -3,7 +3,6 @@
   
   const { onSuccess } = $props<{ onSuccess?: () => void }>();
   
-  let email = $state('');
   let password = $state('');
   let username = $state('');
   let isLoading = $state(false);
@@ -11,9 +10,33 @@
   let errorMessage = $state('');
   let successMessage = $state('');
   
+  function generateEmailFromUsername(username: string): string {
+    if (!username) {
+      throw new Error('Username cannot be empty');
+    }
+    
+    if (username.includes('@')) {
+      throw new Error('Username cannot contain @ symbol');
+    }
+    
+    if (username.length < 3) {
+      throw new Error('Username must be at least 3 characters');
+    }
+    
+    if (username.length > 30) {
+      throw new Error('Username must be less than 30 characters');
+    }
+    
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      throw new Error('Username can only contain letters, numbers, underscores, and hyphens');
+    }
+    
+    return `${username}@gmaul.com`;
+  }
+  
   async function handleSubmit() {
-    if (!email || !password) {
-      errorMessage = 'Please enter both email and password';
+    if (!password) {
+      errorMessage = 'Please enter a password';
       return;
     }
     
@@ -27,15 +50,12 @@
     successMessage = '';
     
     try {
+      const email = generateEmailFromUsername(username);
       const { error } = isRegister 
         ? await signUp(email, password, username)
-        : await signIn(email, password);
-        
+        : await signIn(username, password);
       if (error) {
         errorMessage = error.message;
-      } else if (isRegister) {
-        successMessage = 'Account created! Please check your email to confirm your registration before logging in.';
-        // Don't call onSuccess for registration to allow user to see the message
       } else if (onSuccess) {
         onSuccess();
       }
@@ -61,38 +81,24 @@
   
   <form on:submit|preventDefault={handleSubmit} class="space-y-4">
     <div>
-      <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+      <div class="flex items-center gap-1">
+        <label for="username" class="block text-sm font-medium text-gray-700">RuneScape Username</label>
+        <div class="relative group">
+          <span class="cursor-help text-gray-500 text-xs">?</span>
+          <div class="absolute hidden group-hover:block bg-black text-white p-2 rounded text-sm w-48 bottom-full left-1/2 transform -translate-x-1/2 mb-1 z-10">
+            This is only required for if your bracket wins
+          </div>
+        </div>
+      </div>
       <input
-        id="email"
-        type="email"
-        bind:value={email}
+        id="username"
+        type="text"
+        bind:value={username}
         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring focus:ring-gray-500 focus:ring-opacity-50"
-        placeholder="your@email.com"
+        placeholder="Your in-game name"
         required
       />
     </div>
-    
-    {#if isRegister}
-      <div>
-        <div class="flex items-center gap-1">
-          <label for="username" class="block text-sm font-medium text-gray-700">RuneScape Username</label>
-          <div class="relative group">
-            <span class="cursor-help text-gray-500 text-xs">?</span>
-            <div class="absolute hidden group-hover:block bg-black text-white p-2 rounded text-sm w-48 bottom-full left-1/2 transform -translate-x-1/2 mb-1 z-10">
-              This is only required for if your bracket wins
-            </div>
-          </div>
-        </div>
-        <input
-          id="username"
-          type="text"
-          bind:value={username}
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring focus:ring-gray-500 focus:ring-opacity-50"
-          placeholder="Your in-game name"
-          required
-        />
-      </div>
-    {/if}
     
     <div>
       <div class="flex items-center gap-1">

@@ -17,8 +17,8 @@
 
 <div class="flex items-center">
   <div class="mr-4">
-    <span class="text-sm text-gray-700">
-      {$user?.email}
+    <span class="text-xl text-gray-700">
+      {$user?.user_metadata.display_name}
     </span>
   </div>
   <button

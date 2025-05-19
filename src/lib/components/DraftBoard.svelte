@@ -2,7 +2,7 @@
     import DraftBoardItem from './DraftBoardItem.svelte';
     import DraftBoardHeader from './DraftBoardHeader.svelte';
     import InfoModal from './InfoModal.svelte';
-    import { saveDraftBoard, updateDraftBoard, getDraftBoard } from '$lib/services/draftService';
+    import { saveDraftBoard, updateDraftBoard, getDraftBoard, getDraftBoardByUser } from '$lib/services/draftService';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { user } from '$lib/stores/authStore';
@@ -17,7 +17,6 @@
       captains = [], 
       totalPicks = 24,
       title = 'Deadman Allstars Draft',
-      initialState = '',
       boardId = ''
     } = $props();
   
@@ -157,8 +156,8 @@
       showExportedData = false;
       exportedData = '';
     }
-    
-    // Handle saving to Supabase
+
+        // Handle saving to Supabase
     async function handleSave() {
       isSaving = true;
       saveError = '';
@@ -166,8 +165,8 @@
       
       try {
         const picksData = selections.map(player => player?.name || null);
-        
         const currentUser = get(user);
+        const isLoggedIn = !!currentUser;
         
         const draftBoardData = {
           title: title,
@@ -176,21 +175,18 @@
           user_id: currentUser?.id
         };
         
-        if (boardId) {
-          // Update existing board
-          const { error } = await updateDraftBoard(boardId, draftBoardData);
-          if (error) {
-            saveError = error.message;
-          } else {
-            saveSuccess = 'Board updated successfully!';
-          }
+        // Always use saveDraftBoard - it will handle creating or updating
+        const { error } = await saveDraftBoard(draftBoardData);
+        
+        if (error) {
+          saveError = error.message;
         } else {
-          // Create new board
-          const { data, error } = await saveDraftBoard(draftBoardData);
-          if (error) {
-            saveError = error.message;
-          } else {
-            saveSuccess = 'Board saved successfully!';
+          saveSuccess = isLoggedIn 
+            ? 'Board saved successfully! Your submission will count for the competition.' 
+            : 'Anonymous board saved. Submission will not count for the competition.';
+          
+          // If it's a new save, redirect after a delay
+          if (!boardId) {
             setTimeout(() => {
               goto('/');
             }, 1500);
@@ -224,44 +220,6 @@
       }
     }
     
-    // Load a draft board from Supabase by ID
-    async function loadDraftBoard(id: string) {
-      try {
-        const { data, error } = await getDraftBoard(id);
-        
-        if (error) {
-          saveError = error.message;
-          return;
-        }
-        
-        if (data) {
-          // Update UI with board data
-          selections.fill(null);
-          availablePlayers.length = 0;
-          availablePlayers.push(...allOriginalPlayers);
-          
-          if (Array.isArray(data.selections)) {
-            for (let i = 0; i < data.selections.length && i < selections.length; i++) {
-              const playerName = data.selections[i];
-              if (playerName) {
-                const player = availablePlayers.find(p => p.name === playerName);
-                if (player) {
-                  selections[i] = player;
-                  const playerIndex = availablePlayers.findIndex(p => p.name === playerName);
-                  if (playerIndex > -1) {
-                    availablePlayers.splice(playerIndex, 1);
-                  }
-                }
-              }
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Error loading draft board:', err);
-        saveError = 'An error occurred while loading the draft board';
-      }
-    }
-    
     // Handle loading serialized state
     function handleLoadState() {
       if (!serializedInput.trim()) {
@@ -275,15 +233,6 @@
     function toggleInfoModal() {
       isInfoModalOpen = !isInfoModalOpen;
     }
-    
-    // Initialize from initialState or boardId if provided
-    onMount(async () => {
-      if (initialState) {
-        deserializeDraftBoard(initialState);
-      } else if (boardId) {
-        await loadDraftBoard(boardId);
-      }
-    });
 </script>
   
 <div class="bg-white border-4 border-gray-200 rounded-lg p-6 text-gray-900">

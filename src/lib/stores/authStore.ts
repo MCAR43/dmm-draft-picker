@@ -1,6 +1,6 @@
 import { supabase } from '$lib/supabase';
 import { writable } from 'svelte/store';
-import type { Session, User } from '@supabase/supabase-js';
+import { AuthError, type Session, type User } from '@supabase/supabase-js';
 
 // Create a store with an initial state of null (not logged in)
 export const user = writable<User | null>(null);
@@ -25,11 +25,14 @@ export const initializeAuth = async () => {
 
 // Helper functions for auth
 export const signUp = async (email: string, password: string, username: string) => {
-  const { error } = await supabase.auth.signUp({ email, password, options: { data: { username } } });
+  const { error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: username } } });
   return { error };
 };
 
-export const signIn = async (email: string, password: string) => {
+export const signIn = async (username: string, password: string) => {
+  const email = `${username}@gmaul.com`;
+
+  console.log(`signIn: ${email}, ${password}`);
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   return { error };
 };

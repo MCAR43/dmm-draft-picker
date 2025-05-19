@@ -30,6 +30,9 @@
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.49.4",
-		"chart.js": "^4.4.9"
+		"chart.js": "^4.4.9",
+		"d3-array": "^3.2.4",
+		"d3-scale": "^4.0.2",
+		"layerchart": "^1.0.11"
 	}
 }

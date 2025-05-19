@@ -1,7 +1,8 @@
 <script lang="ts">
     const { 
       player,
-      onSelect
+      onSelect,
+      scale = 1
     } = $props();
 
     function handleSelect() {
@@ -10,7 +11,8 @@
   </script>
   
   <div 
-    class="bg-gray-100 border-2 border-gray-200 rounded cursor-pointer p-2 transition-all hover:bg-gray-200 hover:scale-105" 
+    class="bg-gray-100 border-2 border-gray-200 rounded cursor-pointer p-2 transition-all hover:bg-gray-200 hover:scale-105"
+    style="transform: scale({scale}); transform-origin: center;" 
     on:click={handleSelect}
   >
     <div class="bg-white p-1 border border-gray-200 rounded mb-2">

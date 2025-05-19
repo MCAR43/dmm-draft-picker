@@ -170,7 +170,6 @@
         
         const draftBoardData = {
           title: title,
-          captains: captains,
           selections: picksData,
           user_id: currentUser?.id
         };

@@ -3,7 +3,6 @@ import { supabase } from '$lib/supabase';
 export type DraftBoard = {
   id?: string;
   title: string;
-  captains: string[];
   selections: string[] | null[];
   created_at?: string;
   user_id?: string;
@@ -87,3 +86,11 @@ export const deleteDraftBoard = async (id: string) => {
   
   return { error };
 }; 
+
+export const getDraftStats = async () => {
+  const { data, error } = await supabase
+    .from('draft_boards')
+    .select('*')
+
+  return { data, error };
+};

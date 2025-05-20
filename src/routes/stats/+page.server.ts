@@ -32,6 +32,26 @@ interface TeamCompositionData {
     };
 }
 
+// Interface for Borda count results
+interface BordaCountResult {
+    playerName: string;
+    totalPoints: number;
+    averagePoints: number;
+    boardsAppearing: number;
+}
+
+// Interface for Kemeny-Young result
+interface KemenyYoungResult {
+    playerName: string;
+    score: number;
+    rank: number;
+}
+
+// Define interface for player stats record
+interface PlayerStatsRecord {
+    [playerName: string]: PlayerStats;
+}
+
 export async function load({ url }) {
     // This is my test ID It is DOGSHIT data
     // const draftStats = await getDraftStats(null);
@@ -71,18 +91,23 @@ export async function load({ url }) {
     // Maximum pick position (assuming it's the number of players)
     const maxPickPosition = 24; // Based on the positions in captains.json
     
-    // Calculate team composition data for heatmap
-    // Player stats if a player was requested
+    // Run Borda count analysis on all boards
+    const bordaResults = calculateBordaCount(draftStats.data || [], maxPickPosition);
+    
+    // Calculate stats for all players
+    const allPlayerStats: PlayerStatsRecord = {};
+    playersData.forEach(player => {
+        const baseStats = calculatePlayerStats(player, draftStats.data || [], captainsData, maxPickPosition);
+        allPlayerStats[player.name] = {
+            ...baseStats,
+            playerName: player.name
+        };
+    });
+    
+    // Player stats if a player was requested (for backward compatibility)
     let playerStats: PlayerStats | null = null;
-    if (playerName) {
-        const player = playersData.find(p => p.name === playerName);
-        if (player) {
-            const baseStats = calculatePlayerStats(player, draftStats.data || [], captainsData, maxPickPosition);
-            playerStats = {
-                ...baseStats,
-                playerName: player.name
-            };
-        }
+    if (playerName && allPlayerStats[playerName]) {
+        playerStats = allPlayerStats[playerName];
     }
     
     return {
@@ -94,8 +119,62 @@ export async function load({ url }) {
             maxPickPosition
         },
         playerStats,
+        allPlayerStats,
+        bordaResults,
     };
 }
+
+// Calculate Borda count for all players across all boards
+function calculateBordaCount(boardsData: any[], maxPickPosition: number): BordaCountResult[] {
+    // Object to track player Borda points
+    const playerScores: Record<string, { 
+        totalPoints: number,
+        boardsAppearing: number
+    }> = {};
+    
+    // Go through all draft boards
+    if (boardsData && boardsData.length > 0) {
+        boardsData.forEach(board => {
+            if (board.selections) {
+                // For each player in this board
+                board.selections.forEach((playerName: string | null, index: number) => {
+                    if (playerName) {
+                        // In Borda count, higher positions get more points
+                        // If there are maxPickPosition possible positions, first place gets maxPickPosition points,
+                        // second place gets maxPickPosition-1 points, etc.
+                        const bordaPoints = maxPickPosition - index;
+                        
+                        // Initialize player data if needed
+                        if (!playerScores[playerName]) {
+                            playerScores[playerName] = { 
+                                totalPoints: 0,
+                                boardsAppearing: 0
+                            };
+                        }
+                        
+                        // Add points for this board
+                        playerScores[playerName].totalPoints += bordaPoints;
+                        playerScores[playerName].boardsAppearing += 1;
+                    }
+                });
+            }
+        });
+    }
+    
+    // Convert to array and calculate average points
+    const results: BordaCountResult[] = Object.entries(playerScores).map(([playerName, data]) => ({
+        playerName,
+        totalPoints: data.totalPoints,
+        averagePoints: data.boardsAppearing > 0 
+            ? Math.round((data.totalPoints / data.boardsAppearing) * 10) / 10 
+            : 0,
+        boardsAppearing: data.boardsAppearing
+    }));
+    
+    // Sort by total points (highest first)
+    return results.sort((a, b) => b.totalPoints - a.totalPoints);
+}
+
 
 // Calculate stats for a specific player
 function calculatePlayerStats(player: any, boardsData: any[], captainsData: any[], maxPickPosition: number): PlayerStatsBase {

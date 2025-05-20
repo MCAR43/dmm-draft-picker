@@ -45,7 +45,7 @@
         </a>
         <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
           <a href="/" class={getNavLinkClass('/') + " text-xl"}>
-            Home
+            Draft Board
           </a>
           <a href="/stats" class={getNavLinkClass('/stats') + " text-xl"}>
             Stats
@@ -80,7 +80,7 @@
 <div class="sm:hidden">
   <div class="pt-2 pb-3 space-y-1">
     <a href="/" class={getMobileLinkClass('/')}>
-      Home
+      Draft Board 
     </a>
     <a href="/stats" class={getMobileLinkClass('/stats')}>
       Stats

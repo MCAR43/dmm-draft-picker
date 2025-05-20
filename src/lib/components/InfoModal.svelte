@@ -50,17 +50,6 @@
 				There's a <span class="font-bold text-gray-800">100M OSRS GP bounty</span> for the first 
 				person to submit a completely correct draft board.  This is a small amount but is all i've got as a poor GIM 
 			</p>
-			
-			<p>
-				Want to contribute to the prize pool? Contact me in-game (Gimpsu) or at hello@gimpsu.dev with your donation 
-				amount and details.  Every contribution will be posted to the website.
-			</p>
-			
-			<p>
-				Payment proof will be posted to this website and the OSRS Subreddit after the competition 
-				concludes. If no perfect bracket exists, the most accurate prediction (determined by a 
-				fitness algorithm) will receive the prize.
-			</p>
 		</div>
 		
 		<div class="mt-6 flex justify-center">

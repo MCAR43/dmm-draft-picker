@@ -8,26 +8,30 @@
     src: string;
   };
   
-  type PickStats = {
-    count: number;
-    percentage: number;
+  type PlayerStats = {
+    playerName: string;
+    pickPositions: number[];
+    averagePickPosition: number;
+    mostLikelyTeam: {
+      captain: any;
+      count: number;
+      percentage: number;
+    };
   };
 
-  type BordaCountResult = {
-    playerName: string;
-    totalPoints: number;
-    averagePoints: number;
-    boardsAppearing: number;
+  type Results = {
+    borda: any[];
+    modePositionFrequency: any[];
   };
 
   const { 
     captains = [], 
     totalPicks = 24,
     title = 'Deadman Allstars Draft',
-    bordaResults = [],
+    results = { borda: [], modePositionFrequency: [] } as Results,
+    playerStats = {} as Record<string, PlayerStats>,
+    selectedAlgorithm = 'borda'
   } = $props();
-
-
 
   const numTeams = captains.length;
   const rounds = Math.ceil(totalPicks / numTeams);
@@ -50,25 +54,30 @@
     draftMatrix.push(row);
   }
   
-  // Process Borda results to populate selections
+  // Process results to populate selections based on selected algorithm
   $effect(() => {
-    if (bordaResults && bordaResults.length > 0) {
+    const currentResults = results[selectedAlgorithm] || [];
+    
+    if (currentResults && currentResults.length > 0) {
       // Sort by total points (highest first) just to be sure
-      const sortedResults = [...bordaResults].sort((a, b) => b.totalPoints - a.totalPoints);
+      const sortedResults = [...currentResults].sort((a, b) => b.totalPoints - a.totalPoints);
       
       // Take only top totalPicks players
       const topPicks = sortedResults.slice(0, totalPicks);
       
-      // Create new selections array based on Borda count rankings
+      // Create new selections array based on rankings
       for (let i = 0; i < totalPicks; i++) {
         if (i < topPicks.length) {
-          const bordaResult = topPicks[i];
-          const player = allPlayers.find(p => p.name === bordaResult.playerName);
+          const result = topPicks[i];
+          const player = allPlayers.find(p => p.name === result.playerName);
           selections[i] = player || null;
         } else {
           selections[i] = null;
         }
       }
+    } else {
+      // Reset selections if no results
+      selections.fill(null);
     }
   });
 </script>
@@ -81,11 +90,12 @@
       <div class="flex flex-col gap-4">
         {#each draftMatrix as round}
           {#if round[colIndex] !== null}
+            {@const currentSelection = selections[round[colIndex] - 1]}
             <ReadOnlyDraftBoardItem
               pickNumber={round[colIndex]}
               captain={captain}
-              selection={selections[round[colIndex] - 1]}
-              stats={null}
+              selection={currentSelection}
+              playerStats={currentSelection ? playerStats[currentSelection.name] : null}
             />
           {/if}
         {/each}

@@ -25,26 +25,11 @@ interface PlayerStatsBase {
     };
 }
 
-// Interface for team composition data
-interface TeamCompositionData {
-    [playerName: string]: {
-        [captainName: string]: number;
-    };
-}
-
 // Interface for Borda count results
-interface BordaCountResult {
+interface OrderPlayerResult {
     playerName: string;
     totalPoints: number;
     averagePoints: number;
-    boardsAppearing: number;
-}
-
-// Interface for Kemeny-Young result
-interface KemenyYoungResult {
-    playerName: string;
-    score: number;
-    rank: number;
 }
 
 // Define interface for player stats record
@@ -81,7 +66,7 @@ export async function load({ url }) {
             }
         });
     }
-    
+
     // Calculate percentage if there are boards
     const totalBoards = draftStats.data ? draftStats.data.length : 0;
     const firstPickPercentage = totalBoards > 0 
@@ -93,6 +78,11 @@ export async function load({ url }) {
     
     // Run Borda count analysis on all boards
     const bordaResults = calculateBordaCount(draftStats.data || [], maxPickPosition);
+    const modePositionFrequencyResults = calculatePositionFrequencyRanking(draftStats.data || [], maxPickPosition);
+    const results = {
+        "borda": bordaResults,
+        "modePositionFrequency": modePositionFrequencyResults
+    }
     
     // Calculate stats for all players
     const allPlayerStats: PlayerStatsRecord = {};
@@ -120,12 +110,12 @@ export async function load({ url }) {
         },
         playerStats,
         allPlayerStats,
-        bordaResults,
+        results
     };
 }
 
 // Calculate Borda count for all players across all boards
-function calculateBordaCount(boardsData: any[], maxPickPosition: number): BordaCountResult[] {
+function calculateBordaCount(boardsData: any[], maxPickPosition: number): OrderPlayerResult[] {
     // Object to track player Borda points
     const playerScores: Record<string, { 
         totalPoints: number,
@@ -162,7 +152,7 @@ function calculateBordaCount(boardsData: any[], maxPickPosition: number): BordaC
     }
     
     // Convert to array and calculate average points
-    const results: BordaCountResult[] = Object.entries(playerScores).map(([playerName, data]) => ({
+    const results: OrderPlayerResult[] = Object.entries(playerScores).map(([playerName, data]) => ({
         playerName,
         totalPoints: data.totalPoints,
         averagePoints: data.boardsAppearing > 0 
@@ -240,4 +230,82 @@ function calculatePlayerStats(player: any, boardsData: any[], captainsData: any[
             percentage
         }
     };
+}
+
+// Function to calculate position frequency-based ranking
+function calculatePositionFrequencyRanking(boardsData: any[], maxPickPosition: number): OrderPlayerResult[] {
+  // Track position frequencies for each player
+  const playerPositionData: Record<string, {
+    positionCounts: Record<number, number>,
+    totalAppearances: number,
+    mostCommonPosition: number,
+    highestFrequency: number,
+    confidence: number
+  }> = {};
+  
+  // Process all draft boards
+  if (boardsData && boardsData.length > 0) {
+    boardsData.forEach(board => {
+      if (board.selections) {
+        board.selections.forEach((playerName: string | null, index: number) => {
+          if (playerName) {
+            const position = index + 1; // 1-indexed position
+            
+            // Initialize player data if needed
+            if (!playerPositionData[playerName]) {
+              playerPositionData[playerName] = {
+                positionCounts: {},
+                totalAppearances: 0,
+                mostCommonPosition: 0,
+                highestFrequency: 0,
+                confidence: 0
+              };
+            }
+            
+            // Count this position
+            playerPositionData[playerName].positionCounts[position] = 
+              (playerPositionData[playerName].positionCounts[position] || 0) + 1;
+            
+            // Track total appearances
+            playerPositionData[playerName].totalAppearances += 1;
+          }
+        });
+      }
+    });
+  }
+  
+  // Find most common position for each player
+  Object.keys(playerPositionData).forEach(playerName => {
+    const data = playerPositionData[playerName];
+    let mostCommonPosition = 0;
+    let highestFrequency = 0;
+    
+    Object.entries(data.positionCounts).forEach(([position, count]) => {
+      const posNum = parseInt(position);
+      if (count > highestFrequency) {
+        highestFrequency = count;
+        mostCommonPosition = posNum;
+      }
+    });
+    
+    // Calculate confidence (% of appearances at most common position)
+    const confidence = data.totalAppearances > 0 
+      ? (highestFrequency / data.totalAppearances) * 100 
+      : 0;
+    
+    data.mostCommonPosition = mostCommonPosition;
+    data.highestFrequency = highestFrequency;
+    data.confidence = confidence;
+  });
+  
+  // Convert to array for sorting
+  const results: OrderPlayerResult[] = Object.entries(playerPositionData).map(([playerName, data]) => ({
+    playerName,
+    // For total points, we use position as primary factor, then confidence as tiebreaker
+    totalPoints: (data.mostCommonPosition * -10000) + data.confidence * 100 + data.highestFrequency,
+    averagePoints: data.mostCommonPosition
+  }));
+  
+  // Sort by position (ascending) and then by confidence (descending) for ties
+  return results.sort((a, b) => a.totalPoints - b.totalPoints);
 }

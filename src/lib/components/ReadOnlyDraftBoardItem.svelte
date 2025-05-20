@@ -4,16 +4,22 @@
     src: string;
   };
 
-  type PickStats = {
-    count: number;
-    percentage: number;
+  type PlayerStats = {
+    playerName: string;
+    pickPositions: number[];
+    averagePickPosition: number;
+    mostLikelyTeam: {
+      captain: any;
+      count: number;
+      percentage: number;
+    };
   };
 
   const { 
     pickNumber = 0, 
     captain = {} as any,
     selection = null as Player | null,
-    stats = null as PickStats | null
+    playerStats = null as PlayerStats | null
   } = $props();
 </script>
 
@@ -53,10 +59,9 @@
       </div>
       <div class="text-center font-medium {captain.textColor || 'text-gray-700'}">{selection.name}</div>
       
-      {#if stats}
-        <div class="mt-2 text-center">
-          <div class="text-xs text-gray-600">Pick count: <span class="font-semibold">{stats.count}</span></div>
-          <div class="text-xs text-gray-600">Pick %: <span class="font-semibold">{stats.percentage}%</span></div>
+      {#if playerStats}
+        <div class="mt-2 text-center space-y-1">
+          <div class="text-xs text-gray-600">Avg. Pick: <span class="font-semibold">{playerStats.averagePickPosition}</span></div>
         </div>
       {/if}
     </div>

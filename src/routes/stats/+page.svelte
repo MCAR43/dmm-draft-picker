@@ -1,5 +1,8 @@
 <script lang="ts">
-    import { goto } from '$app/navigation';
+    import { page } from '$app/stores';
+    import { browser } from '$app/environment';
+    import { onMount } from 'svelte';
+    import { goto, replaceState } from '$app/navigation';
     import PlayerSelector from '$lib/components/PlayerSelector.svelte';
     import StatCard from '$lib/components/StatCard.svelte';
     import PickDistributionChart from '$lib/components/PickDistributionChart.svelte';
@@ -15,27 +18,51 @@
     
     // Player list from imported data
     const allPlayers = playersData;
-    
-    // Player selection state - track this separately from server data
-    let selectedPlayer = $state<{name: string, src: string} | null>(null);
-    let selectedPlayerStats = $derived(selectedPlayer ? allPlayerStats[selectedPlayer.name] : null);
-    
-    // Initialize selectedPlayer if URL has player parameter
-    $effect(() => {
-        const urlPlayer = new URL(window.location.href).searchParams.get('player');
-        if (urlPlayer) {
-            selectedPlayer = allPlayers.find(p => p.name === urlPlayer) || null;
+
+    const results = $derived(data.results);
+    // Updated reactive state
+    let selectedPlayer = $state<{name: string, src: string}>({
+      name: 'Westham',
+      src: '/images/players/westham.png'
+    });
+    let selectedPlayerStats = $derived(allPlayerStats[selectedPlayer.name]);
+
+     // Initialize selectedPlayer from URL param only on initial page load
+     onMount(() => {
+        if (browser) {
+            const urlPlayer = $page.url.searchParams.get('player');
+            if (urlPlayer) {
+                selectedPlayer = allPlayers.find(p => p.name === urlPlayer)!;
+            }
         }
     });
     
     function handlePlayerSelect(player: {name: string, src: string}) {
+        // Update selected player
         selectedPlayer = player;
-        // Update URL with selected player (but don't trigger a server load)
-        goto(`?player=${player.name}`, { replaceState: true, keepFocus: true });
-    }
+        
+        // Update URL without causing page navigation
+        if (browser) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('player', player.name);
+            replaceState(url, {});
+        }
+    } 
 
-    // Get the Borda results from data
-    const { bordaResults } = data;
+    // Add algorithm types definition
+    const algorithmTypes = [
+        { 
+          id: 'borda', 
+          name: 'Borda Count', 
+          description: 'Players are ranked using the Borda Count algorithm to determine a weighted ranking of their draft positions across all submitted draft boards.\nThis esssentialy creates a tier list of players.'  
+        },
+        { 
+          id: 'modePositionFrequency', 
+          name: 'Mode Position', 
+          description: 'Players are ranked using a custom approach of HEAVILY weighting their draft position in boards instead of their average ranking.  This is a naive approach and does not take into account the actual rankings of the players.' }
+    ];
+    
+    let selectedAlgorithm = $state(algorithmTypes[1]);
 </script>
   
 <main>
@@ -145,16 +172,28 @@
     <!-- Borda Results Draft Board -->
     <div class="w-full">
       <div class="bg-white border-4 border-gray-200 rounded-lg p-6 text-gray-900">
-        <h2 class="text-2xl font-bold mb-6 text-center">Community Consensus Board</h2>
+        <div class="flex flex-col items-center gap-4 mb-6">
+          <h2 class="text-2xl font-bold">Community Consensus Board</h2>
+          <select 
+            class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            bind:value={selectedAlgorithm}
+          >
+            {#each algorithmTypes as algorithm}
+              <option value={algorithm}>{algorithm.name}</option>
+            {/each}
+          </select>
+        </div>
         <p class="text-gray-600 mb-6 text-center">
-          This board shows the community's consensus on player rankings based on the <a href="https://en.wikipedia.org/wiki/Borda_count" class="text-indigo-600 hover:text-indigo-800 underline" target="_blank" rel="noopener noreferrer">Borda Count</a> method. 
-          Players are ranked according to their average draft position across all submitted boards.
+          {selectedAlgorithm.description}
         </p>
+
         <ReadOnlyDraftBoard 
           captains={captains}
           totalPicks={24}
           title="Community Consensus Draft"
-          bordaResults={bordaResults}
+          results={results}
+          playerStats={allPlayerStats}
+          selectedAlgorithm={selectedAlgorithm.id}
         />
       </div>
     </div>

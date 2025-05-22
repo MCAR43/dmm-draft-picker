@@ -9,6 +9,7 @@
   const correctDraft = [
     "westham",
     "purpp",
+    "port_khazard"
   ]
 
   // Stats

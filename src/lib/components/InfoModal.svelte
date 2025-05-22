@@ -56,8 +56,9 @@
 			<button
 				on:click={onClose}
 				class="bg-gray-100 text-gray-800 border-2 border-gray-800 px-6 py-2 rounded font-bold hover:bg-gray-200 transition-colors"
-			>
-				Close
+			>:
+				C
+				lose
 			</button>
 		</div>
 	</div>

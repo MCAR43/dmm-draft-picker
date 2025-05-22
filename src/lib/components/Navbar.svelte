@@ -50,6 +50,9 @@
           <a href="/stats" class={getNavLinkClass('/stats') + " text-xl"}>
             Stats
           </a>
+          <a href="/results" class={getNavLinkClass('/results') + " text-xl"}>
+            Results
+          </a>
         </div>
       </div>
       
@@ -84,6 +87,9 @@
     </a>
     <a href="/stats" class={getMobileLinkClass('/stats')}>
       Stats
+    </a>
+    <a href="/results" class={getMobileLinkClass('/results')}>
+      Results
     </a>
   </div>
 </div>

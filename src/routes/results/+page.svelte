@@ -6,7 +6,9 @@
   import { fly } from 'svelte/transition';
   
   // The final correct draft result
-  const correctDraft = [];
+  const correctDraft = [
+    "westham"
+  ];
   
   // Stats
   let allBoards = $state<DraftBoard[]>([]);

@@ -7,9 +7,10 @@
   
   // The final correct draft result
   const correctDraft = [
-    "westham"
-  ];
-  
+    "westham",
+    "purpp",
+  ]
+
   // Stats
   let allBoards = $state<DraftBoard[]>([]);
   let loading = $state(true);

@@ -12,7 +12,9 @@
     "portKhazard",
     "rhys",
     "eliop14",
-    "lake"
+    "lake",
+    "purespam",
+    "mika"
   ]
 
   // Stats

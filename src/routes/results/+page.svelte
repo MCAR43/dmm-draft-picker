@@ -10,7 +10,9 @@
     "westham",
     "purpp",
     "portKhazard",
-    "rhys"
+    "rhys",
+    "eliop14",
+    "lake"
   ]
 
   // Stats

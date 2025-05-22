@@ -6,32 +6,7 @@
   import { fly } from 'svelte/transition';
   
   // The final correct draft result
-  const correctDraft = [
-    "westham",
-    "dubiedobies",
-    "portKhazard",
-    "ditterbitter",
-    "rhys",
-    "purpp",
-    "mika",
-    "eliop14",
-    "purespam",
-    "lake",
-    "alfie",
-    "skiddler",
-    "pip",
-    "cEngineer",
-    "vTheVictim",
-    "evscape",
-    "muts",
-    "sickNerd",
-    "coxie",
-    "mmorpg",
-    "verf",
-    "raikesy",
-    "sparcMac",
-    "mrMammal"
-  ];
+  const correctDraft = [];
   
   // Stats
   let allBoards = $state<DraftBoard[]>([]);
